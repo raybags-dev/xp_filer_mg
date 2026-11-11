@@ -1,0 +1,39 @@
+node_modules/
+dist/
+build/
+.env
+coverage/
+.DS_Store
+
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
+
+# Terraform
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+*.tfvars
+!*.tfvars.example
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+*.tfstate*
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Lambda build artifacts
+build/lambda/*
+directives*

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0a0a0f">
+    <title>404 - Page Not Found</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0a0a0f;
+            color: #f5f5f5;
+            font-family: Arial, sans-serif;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 520px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .code {
+            font-size: clamp(100px, 22vw, 170px);
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -10px;
+            color: #08d0ff;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 14px;
+        }
+
+        p {
+            color: #9999a5;
+            font-size: 15px;
+            line-height: 1.7;
+            margin-bottom: 32px;
+        }
+
+        a {
+            display: inline-block;
+            padding: 13px 24px;
+            background: #08d0ff;
+            color: #0a0a0f;
+            text-decoration: none;
+            font-weight: 700;
+            border-radius: 6px;
+            transition: opacity 0.2s ease;
+        }
+
+        a:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <div class="code">404</div>
+
+        <h1>Page not found</h1>
+
+        <p>
+            The page you're looking for doesn't exist,
+            may have been moved, or is temporarily unavailable.
+        </p>
+
+        <a href="/">Return to homepage</a>
+    </main>
+</body>
+
+</html>

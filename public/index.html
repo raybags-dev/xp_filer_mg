@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Upload multiple images to the AWS serverless image processing pipeline.">
+    <title>Image Pipeline | Upload Console</title>
+
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #080d18;
+            --surface: #101827;
+            --surface-light: #172338;
+            --border: #26364d;
+            --accent: #38bdf8;
+            --success: #34d399;
+            --danger: #fb7185;
+            --warning: #fbbf24;
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Inter, system-ui, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at 50% 0%, rgba(56, 189, 248, .12), transparent 40%),
+                var(--bg);
+        }
+
+        button {
+            font: inherit;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 680px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 25px;
+        }
+
+        .logo {
+            width: 46px;
+            height: 46px;
+            display: grid;
+            place-items: center;
+            border: 1px solid rgba(56, 189, 248, .3);
+            border-radius: 13px;
+            background: rgba(56, 189, 248, .1);
+            color: var(--accent);
+            font-size: 23px;
+        }
+
+        .brand-name {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: .04em;
+        }
+
+        .brand-description {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .card {
+            overflow: hidden;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--surface);
+            box-shadow: 0 24px 70px rgba(0, 0, 0, .3);
+        }
+
+        .card-content {
+            padding: 30px;
+        }
+
+        .eyebrow {
+            margin: 0 0 10px;
+            color: var(--accent);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(24px, 5vw, 31px);
+            letter-spacing: -.04em;
+        }
+
+        .subtitle {
+            margin: 10px 0 25px;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .dropzone {
+            min-height: 190px;
+            padding: 28px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1.5px dashed #40536d;
+            border-radius: 12px;
+            background: rgba(23, 35, 56, .45);
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .dropzone:hover,
+        .dropzone.dragover {
+            border-color: var(--accent);
+            background: rgba(56, 189, 248, .07);
+        }
+
+        .drop-icon {
+            width: 54px;
+            height: 54px;
+            display: grid;
+            place-items: center;
+            margin-bottom: 16px;
+            border-radius: 15px;
+            background: rgba(56, 189, 248, .1);
+            color: var(--accent);
+            font-size: 25px;
+        }
+
+        .drop-title {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .drop-description {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .selection-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin: 24px 0 12px;
+        }
+
+        .selection-title {
+            margin: 0;
+            font-size: 13px;
+            font-weight: 650;
+        }
+
+        .selection-count {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .image-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .image-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 11px;
+            background: var(--surface-light);
+        }
+
+        .preview {
+            width: 64px;
+            height: 64px;
+            flex-shrink: 0;
+            border-radius: 8px;
+            object-fit: cover;
+            background: #26364d;
+        }
+
+        .image-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .image-name {
+            overflow: hidden;
+            margin: 0;
+            font-size: 12px;
+            font-weight: 650;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .image-size {
+            margin: 5px 0;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .image-status {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .image-status.uploaded {
+            color: var(--success);
+        }
+
+        .image-status.failed {
+            color: var(--danger);
+        }
+
+        .image-status.uploading {
+            color: var(--accent);
+        }
+
+        .remove-button {
+            width: 30px;
+            height: 30px;
+            flex-shrink: 0;
+            border: 0;
+            border-radius: 7px;
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+        }
+
+        .remove-button:hover {
+            background: rgba(251, 113, 133, .1);
+            color: var(--danger);
+        }
+
+        .item-progress {
+            width: 100%;
+            height: 4px;
+            margin-top: 8px;
+            accent-color: var(--accent);
+        }
+
+        .selection-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+
+        .text-button {
+            border: 0;
+            background: transparent;
+            color: var(--muted);
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .text-button:hover {
+            color: var(--danger);
+        }
+
+        .upload-button {
+            width: 100%;
+            min-height: 49px;
+            margin-top: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            border: 0;
+            border-radius: 9px;
+            background: var(--accent);
+            color: #06111d;
+            font-size: 13px;
+            font-weight: 750;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .upload-button:hover:not(:disabled) {
+            background: #7dd3fc;
+        }
+
+        .upload-button:disabled {
+            opacity: .4;
+            cursor: not-allowed;
+        }
+
+        .progress-section {
+            display: none;
+            margin-top: 22px;
+        }
+
+        .progress-section.visible {
+            display: block;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+
+        .progress-label {
+            color: var(--muted);
+        }
+
+        .progress-value {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 6px;
+            border-radius: 20px;
+            accent-color: var(--accent);
+        }
+
+        .status {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .status.visible {
+            display: block;
+        }
+
+        .status.success {
+            border-color: rgba(52, 211, 153, .3);
+            background: rgba(52, 211, 153, .07);
+        }
+
+        .status.error {
+            border-color: rgba(251, 113, 133, .3);
+            background: rgba(251, 113, 133, .07);
+        }
+
+        .status.info {
+            border-color: rgba(56, 189, 248, .3);
+            background: rgba(56, 189, 248, .07);
+        }
+
+        .pipeline {
+            padding: 22px 30px;
+            border-top: 1px solid var(--border);
+            background: rgba(8, 13, 24, .4);
+        }
+
+        .pipeline-heading {
+            margin: 0 0 17px;
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+
+        .pipeline-stages {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 5px;
+        }
+
+        .stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stage-icon {
+            width: 34px;
+            height: 34px;
+            display: grid;
+            place-items: center;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--surface-light);
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .stage-label {
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        .stage-arrow {
+            color: #53647a;
+        }
+
+        .footer {
+            margin-top: 20px;
+            color: #64748b;
+            font-size: 11px;
+            text-align: center;
+        }
+
+        @media(max-width:480px) {
+            body {
+                padding: 22px 12px;
+            }
+
+            .card-content {
+                padding: 20px 15px;
+            }
+
+            .pipeline {
+                padding: 20px 12px;
+            }
+
+            .stage-label {
+                font-size: 8px;
+            }
+
+            .stage-arrow {
+                font-size: 11px;
+            }
+
+            .preview {
+                width: 54px;
+                height: 54px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="app">
+
+        <header class="header">
+            <div class="logo">↑</div>
+            <div>
+                <p class="brand-name">IMAGE PIPELINE</p>
+                <p class="brand-description">Serverless upload and processing console</p>
+            </div>
+        </header>
+
+        <section class="card">
+            <div class="card-content">
+
+                <p class="eyebrow">Image ingestion</p>
+                <h1>Upload your images</h1>
+
+                <p class="subtitle">
+                    Select or drop multiple images. Each image will be uploaded
+                    directly to Amazon S3 and processed independently by the
+                    event-driven pipeline.
+                </p>
+
+                <label class="dropzone" id="dropZone" for="fileInput">
+                    <div class="drop-icon">↑</div>
+                    <p class="drop-title">Drop images here or browse files</p>
+                    <p class="drop-description">
+                        JPG, JPEG, PNG and WEBP · Multiple files supported
+                    </p>
+
+                    <input class="file-input" type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+                </label>
+
+                <div id="selectionArea" hidden>
+                    <div class="selection-header">
+                        <p class="selection-title">Selected images</p>
+                        <span class="selection-count" id="selectionCount"></span>
+                    </div>
+
+                    <div class="image-list" id="imageList"></div>
+
+                    <div class="selection-actions">
+                        <button class="text-button" id="clearButton" type="button">
+                            Clear selection
+                        </button>
+                    </div>
+                </div>
+
+                <button class="upload-button" id="uploadButton" type="button" disabled>
+                    Upload images
+                </button>
+
+                <div class="progress-section" id="progressSection">
+                    <div class="progress-header">
+                        <span class="progress-label" id="progressLabel">
+                            Preparing uploads...
+                        </span>
+                        <span class="progress-value" id="progressValue">0%</span>
+                    </div>
+
+                    <progress class="progress-track" id="progressTrack" max="100" value="0"></progress>
+                </div>
+
+                <div class="status" id="status" role="status" aria-live="polite"></div>
+
+            </div>
+
+            <div class="pipeline">
+                <p class="pipeline-heading">Processing architecture</p>
+
+                <div class="pipeline-stages">
+                    <div class="stage">
+                        <div class="stage-icon">S3</div>
+                        <span class="stage-label">Storage</span>
+                    </div>
+                    <span class="stage-arrow">→</span>
+                    <div class="stage">
+                        <div class="stage-icon">SQS</div>
+                        <span class="stage-label">Queue</span>
+                    </div>
+                    <span class="stage-arrow">→</span>
+                    <div class="stage">
+                        <div class="stage-icon">L2</div>
+                        <span class="stage-label">Listener</span>
+                    </div>
+                    <span class="stage-arrow">→</span>
+                    <div class="stage">
+                        <div class="stage-icon">SFN</div>
+                        <span class="stage-label">Workflow</span>
+                    </div>
+                    <span class="stage-arrow">→</span>
+                    <div class="stage">
+                        <div class="stage-icon">L3–5</div>
+                        <span class="stage-label">Processing</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            Direct-to-S3 uploads · Independent image processing · AWS serverless
+        </footer>
+
+    </main>
+
+    <script src="./js/app.js" type="module" defer></script>
+</body>
+
+</html>
